@@ -1,31 +1,32 @@
 **RISC-V Task Scheduler Simulation**
 
-A bare-metal RISC-V task scheduler simulation built as part of a literature survey on RISC-V based embedded systems at IIT Gandhinagar. The project demonstrates core embedded OS concepts — bare-metal startup, round-robin scheduling, and task management — without requiring physical hardware.
+A bare-metal RISC-V task scheduler simulation built as part of a literature survey on RISC-V based embedded systems at IIT Gandhinagar. The project demonstrates core embedded OS concepts — bare-metal startup, trap handling, and round-robin scheduling — without requiring physical hardware.
 
 ---
 
 **Project Structure**
 
 ```
-riscv-kernel/
-├── boot.S         # startup assembly, stack init, jumps to main
-├── start.S        # low-level entry point setup
-├── kernel.c       # round-robin scheduler and task definitions
-├── linker.ld      # custom linker script, memory layout
-└── README.md
+.
+├── Makefile        # build system
+├── boot.S          # startup assembly, stack init, jumps to main
+├── trap.S          # trap handler, exception and interrupt entry point
+├── main.c          # kernel entry point, initialization
+├── scheduler.c     # round-robin scheduler and task definitions
+├── os.h            # shared kernel headers and declarations
+├── linker.ld       # custom linker script, memory layout
+└── os.elf          # compiled output binary
 ```
 
 ---
 
 **What It Does**
 
-On execution, the scheduler boots, initializes the stack, and cycles through three concurrent tasks in round-robin order:
+On execution the kernel boots, initializes the stack via `boot.S`, sets up the trap handler via `trap.S`, and cycles through three concurrent tasks in round-robin order via the scheduler:
 
 - **Task 0** — count-up counter, increments on every tick
 - **Task 1** — count-down counter, decrements from a starting value
 - **Task 2** — GPIO toggle simulation, alternates between ON and OFF states
-
-Each tick prints the current task and its state to the console, demonstrating live context switching.
 
 ---
 
@@ -35,7 +36,7 @@ Each tick prints the current task and its state to the console, demonstrating li
 - riscv64-unknown-elf-gcc
 - riscv64-unknown-elf-ld
 - riscv64-unknown-elf-objdump
-- QEMU (for execution — planned)
+- QEMU (for execution)
 
 **Install toolchain in WSL:**
 ```bash
@@ -48,12 +49,17 @@ sudo apt install gcc-riscv64-unknown-elf
 **Build**
 
 ```bash
-riscv64-unknown-elf-gcc -nostdlib -T linker.ld boot.S start.S kernel.c -o kernel.elf
+make
+```
+
+Or manually:
+```bash
+riscv64-unknown-elf-gcc -nostdlib -T linker.ld boot.S trap.S main.c scheduler.c -o os.elf
 ```
 
 **Inspect disassembly:**
 ```bash
-riscv64-unknown-elf-objdump -d kernel.elf
+riscv64-unknown-elf-objdump -d os.elf
 ```
 
 ---
@@ -61,7 +67,7 @@ riscv64-unknown-elf-objdump -d kernel.elf
 **Run on QEMU**
 
 ```bash
-qemu-system-riscv32 -nographic -machine virt -kernel kernel.elf
+qemu-system-riscv32 -nographic -machine virt -kernel os.elf
 ```
 
 ---
@@ -69,8 +75,9 @@ qemu-system-riscv32 -nographic -machine virt -kernel kernel.elf
 **Concepts Demonstrated**
 
 - Bare-metal startup sequence (stack initialization, entry point)
+- Trap handling in assembly (exceptions and interrupts)
 - Custom linker script and memory section layout (.text, .data, .bss)
-- Round-robin task scheduling
+- Round-robin task scheduling in C
 - Cross-compilation workflow for RISC-V embedded targets
 - GPIO peripheral simulation
 
@@ -78,7 +85,7 @@ qemu-system-riscv32 -nographic -machine virt -kernel kernel.elf
 
 **Context**
 
-This project is the practical component of a literature survey on RISC-V based embedded systems, covering RISC-V architecture fundamentals, comparison with ARM, IoT and low-power applications, security mechanisms, and AI edge computing. The implementation grounds the survey findings in hands-on bare-metal RISC-V development.
+This project is the practical component of a literature survey on RISC-V based embedded systems, covering RISC-V architecture fundamentals, comparison with ARM, IoT and low-power applications, security mechanisms, and AI edge computing.
 
 ---
 
